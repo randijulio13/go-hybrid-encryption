@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	encryptor "gitlab.com/randijulio13/go-hybrid-encryption"
+	encryptor "github.com/randijulio13/go-hybrid-encryption"
 )
 
 func TestHybridEncryption(t *testing.T) {

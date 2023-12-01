@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"testing"
 
-	encryptor "gitlab.com/randijulio13/go-hybrid-encryption"
+	encryptor "github.com/randijulio13/go-hybrid-encryption"
 )
 
 func GetAESDecrypted(encrypted string) ([]byte, error) {
