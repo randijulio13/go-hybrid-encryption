@@ -42,9 +42,12 @@ func GenerateKeypair() {
 
 	publicKey := &privateKey.PublicKey
 
-	privateKeyBytes := x509.MarshalPKCS1PrivateKey(privateKey)
+	privateKeyBytes, err := x509.MarshalPKCS8PrivateKey(privateKey)
+	if err != nil {
+		panic(err)
+	}
 	privateKeyPEM := pem.EncodeToMemory(&pem.Block{
-		Type:  "RSA PRIVATE KEY",
+		Type:  "PRIVATE KEY",
 		Bytes: privateKeyBytes,
 	})
 	err = os.WriteFile("private.key", privateKeyPEM, 0644)
@@ -57,7 +60,7 @@ func GenerateKeypair() {
 		panic(err)
 	}
 	publicKeyPEM := pem.EncodeToMemory(&pem.Block{
-		Type:  "RSA PUBLIC KEY",
+		Type:  "PUBLIC KEY",
 		Bytes: publicKeyBytes,
 	})
 	err = os.WriteFile("public.key", publicKeyPEM, 0644)
@@ -69,7 +72,7 @@ func GenerateKeypair() {
 func PublicEncrypt(plainText string, publicKeyPEM string) (string, error) {
 	// Decode kunci publik dari format PEM
 	publicKeyBlock, _ := pem.Decode([]byte(publicKeyPEM))
-	if publicKeyBlock == nil || publicKeyBlock.Type != "RSA PUBLIC KEY" {
+	if publicKeyBlock == nil || publicKeyBlock.Type != "PUBLIC KEY" {
 		return "", errors.New("failed to decode PEM public key")
 	}
 
@@ -99,16 +102,16 @@ func PrivateDecrypt(data string, privateKeyPEM string) (string, error) {
 	}
 
 	privateKeyBlock, _ := pem.Decode([]byte(privateKeyPEM))
-	if privateKeyBlock == nil || privateKeyBlock.Type != "RSA PRIVATE KEY" {
+	if privateKeyBlock == nil || privateKeyBlock.Type != "PRIVATE KEY" {
 		return "", errors.New("failed to decode PEM private key")
 	}
-	privateKey, err := x509.ParsePKCS1PrivateKey(privateKeyBlock.Bytes)
+	privateKey, err := x509.ParsePKCS8PrivateKey(privateKeyBlock.Bytes)
 	if err != nil {
 		return "", err
 	}
 
 	ciphertext := []byte(encryptedData)
-	plaintext, err := rsa.DecryptPKCS1v15(rand.Reader, privateKey, ciphertext)
+	plaintext, err := rsa.DecryptPKCS1v15(rand.Reader, privateKey.(*rsa.PrivateKey), ciphertext)
 	if err != nil {
 		return "", err
 	}
